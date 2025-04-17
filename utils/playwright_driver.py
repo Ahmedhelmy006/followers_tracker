@@ -40,7 +40,7 @@ class PlaywrightDriver:
         try:
             self.playwright = sync_playwright().start()
             self.browser = self.playwright.chromium.launch(
-                headless=False,
+                headless=True,
                 args=[
                     '--disable-blink-features=AutomationControlled',  # Disable the AutomationControlled flag
                     '--no-sandbox',                                   # Useful for some environments

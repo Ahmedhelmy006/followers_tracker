@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 # Import services and utilities
-from services.linkedin_profile import LinkedInProfileAdvancedService
+from services.linkedin_profile import LinkedInProfileService
 from services.linkedin_company import LinkedInCompanyService
 from services.linkedin_newsletter import LinkedInNewsletterService
 from services.twitter import TwitterService
@@ -70,7 +70,7 @@ def collect_linkedin_profile_data() -> Dict[str, Any]:
     logger.info("Collecting LinkedIn profile data...")
     
     try:
-        service = LinkedInProfileAdvancedService()
+        service = LinkedInProfileService()
         data = service.get_profile_data()
         
         logger.info(f"LinkedIn profile data collected: {data['followers']} followers")
