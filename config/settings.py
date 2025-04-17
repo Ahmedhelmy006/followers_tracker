@@ -55,18 +55,16 @@ KIT_STATS_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfOM3yefdvcyb3lXF
 
 # Google Form fields mapping
 FOLLOWERS_FORM_FIELDS = {
-    'Business Infographics': 'entry.627780398',
-    'Nicolas Boucher Online': 'entry.1247179473',
-    'AI Finance Club': 'entry.1150066733',
+    'Business Infographics': 'entry.1247179473',
+    'Nicolas Boucher Online': 'entry.1150066733',
+    'AI Finance Club': 'entry.269674828',
     'Excel Cheatsheets' :'entry.112291860',
-    'Nicolas Boucher Personal Account': 'entry.269674828',
+    'Nicolas Boucher Personal Account': 'entry.627780398',
     'AI + Finance by Nicolas Boucher Newsteller': 'entry.508828894',
     'Nicolas Boucher Online Videos | YouTube Subscribers': 'entry.114799247',
     'Nicolas Boucher Online Videos | YouTube Total Views': 'entry.1433952907',
     'Instagram Total Followers': 'entry.147129590',
     'X Total Number of Followers': 'entry.121881511',
-    'X Followers Last 30 Days': 'entry.1810313943',
-    'X Followers Last 30 Days Percentage': 'entry.1647920330',
     "Kit's Daily Number of Subscribers": 'entry.395742871'
 }
 
