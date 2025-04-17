@@ -52,10 +52,13 @@ class LinkedInProfileService:
         Raises:
             ScrapingError: If there is an error during the scraping process.
         """
-        driver = PlaywrightDriver()
         retries = 0
         
         while retries <= self.max_retries:
+            # Create a fresh driver instance for each attempt
+            driver = PlaywrightDriver()
+            context = None
+            
             try:
                 # Initialize browser
                 context = driver.initialize_driver()
@@ -77,45 +80,41 @@ class LinkedInProfileService:
                 
                 if followers is not None:
                     logger.info(f"Successfully extracted follower count: {followers}")
+                    # Clean up resources before returning
+                    driver.close(context)
                     return followers
                 
-                # Close the context before retrying
+                logger.warning(f"Could not find follower count (Attempt {retries + 1}/{self.max_retries + 1})")
+                
+                # Clean up resources before potential retry
                 driver.close(context)
                 
-                # If we reach the max retries, return None
+                # If we've reached max retries, return None
                 if retries == self.max_retries:
                     logger.warning(f"Could not find follower count after {retries + 1} attempts")
                     return None
                 
                 # Increment retry counter and wait before next attempt
                 retries += 1
-                wait_time = self.retry_wait_seconds
-                logger.info(f"Follower count not found. Retrying in {wait_time} seconds (Attempt {retries + 1}/{self.max_retries + 1})")
-                time.sleep(wait_time)
-                
-                # Create a new driver for the next attempt
-                driver = PlaywrightDriver()
+                logger.info(f"Retrying in {self.retry_wait_seconds} seconds (Attempt {retries + 1}/{self.max_retries + 1})")
+                time.sleep(self.retry_wait_seconds)
                 
             except Exception as e:
                 error_msg = f"Error scraping LinkedIn profile: {str(e)}"
                 logger.error(error_msg)
                 
                 # Clean up resources
-                if 'context' in locals():
+                if context:
                     driver.close(context)
                 
-                # If we reach the max retries, raise the error
+                # If we've reached max retries, raise the error
                 if retries == self.max_retries:
                     raise ScrapingError(error_msg)
                 
                 # Increment retry counter and wait before next attempt
                 retries += 1
-                wait_time = self.retry_wait_seconds
-                logger.info(f"Error occurred. Retrying in {wait_time} seconds (Attempt {retries + 1}/{self.max_retries + 1})")
-                time.sleep(wait_time)
-                
-                # Create a new driver for the next attempt
-                driver = PlaywrightDriver()
+                logger.info(f"Error occurred. Retrying in {self.retry_wait_seconds} seconds (Attempt {retries + 1}/{self.max_retries + 1})")
+                time.sleep(self.retry_wait_seconds)
         
         # This point should never be reached due to the return and raise statements above
         return None
