@@ -20,6 +20,12 @@ import argparse
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
+import os
+import sys
+
+# Add the project root directory to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 # Create necessary directories before setting up logging
 os.makedirs("logs", exist_ok=True)
 os.makedirs("data", exist_ok=True)
