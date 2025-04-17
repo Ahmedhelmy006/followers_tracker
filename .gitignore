@@ -1,0 +1,6 @@
+*.log
+.env
+*.txt
+*.pyc
+*.pyo
+*.pyd
