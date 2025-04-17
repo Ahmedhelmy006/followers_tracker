@@ -83,7 +83,7 @@ class FollowersSubmitter:
                 # LinkedIn Company Data
                 'Business Infographics': company_data_by_name.get("Business Infographics", {}).get("followers"),
                 'Nicolas Boucher Online': company_data_by_name.get("Nicolas Boucher Online", {}).get("followers"),
-                'AI Finance Club': company_data_by_name.get("Ai Finance Club", {}).get("followers"),
+                'AI Finance Club': company_data_by_name.get("AI Finance Club", {}).get("followers"),
                 'Excel Cheatsheets': company_data_by_name.get("Excel Cheatsheets", {}).get("followers"),
                 
                 # LinkedIn Newsletter Data

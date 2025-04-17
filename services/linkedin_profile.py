@@ -28,14 +28,18 @@ class LinkedInProfileService:
     from the HTML of LinkedIn profile pages.
     """
     
-    def __init__(self, profile_url: str = NICOLAS_LKD_PROFILE):
+    def __init__(self, profile_url: str = NICOLAS_LKD_PROFILE, max_retries: int = 5, retry_wait_seconds: int = 10):
         """
         Initialize the LinkedIn Profile Service.
         
         Args:
             profile_url: URL of the LinkedIn profile to scrape, defaults to configured URL
+            max_retries: Maximum number of retry attempts if follower count is not found
+            retry_wait_seconds: Wait time in seconds between retry attempts
         """
         self.profile_url = profile_url
+        self.max_retries = max_retries
+        self.retry_wait_seconds = retry_wait_seconds
         logger.info(f"LinkedIn Profile Service initialized for URL: {profile_url}")
     
     def get_followers(self) -> Optional[int]:
@@ -49,43 +53,72 @@ class LinkedInProfileService:
             ScrapingError: If there is an error during the scraping process.
         """
         driver = PlaywrightDriver()
+        retries = 0
         
-        try:
-            # Initialize browser
-            context = driver.initialize_driver()
-            page = context.new_page()
-            
-            # Navigate to profile page
-            logger.info(f"Navigating to LinkedIn profile: {self.profile_url}")
-            page.goto(self.profile_url, timeout=120000)  # 2 minutes timeout
-            
-            # Wait for page to load
-            logger.debug("Waiting for page content to load")
-            time.sleep(3)  # Give JavaScript time to load
-            
-            # Extract page content
-            page_content = page.content()
-            
-            # Extract followers count
-            followers = self._extract_followers(page_content)
-            
-            if followers is not None:
-                logger.info(f"Successfully extracted follower count: {followers}")
-                return followers
-            
-            logger.warning("Could not find follower count on the page")
-            return None
-            
-        except Exception as e:
-            error_msg = f"Error scraping LinkedIn profile: {str(e)}"
-            logger.error(error_msg)
-            raise ScrapingError(error_msg)
-        
-        finally:
-            # Clean up resources
-            if 'context' in locals():
+        while retries <= self.max_retries:
+            try:
+                # Initialize browser
+                context = driver.initialize_driver()
+                page = context.new_page()
+                
+                # Navigate to profile page
+                logger.info(f"Navigating to LinkedIn profile: {self.profile_url} (Attempt {retries + 1}/{self.max_retries + 1})")
+                page.goto(self.profile_url, timeout=120000)  # 2 minutes timeout
+                
+                # Wait for page to load
+                logger.debug("Waiting for page content to load")
+                time.sleep(3)  # Give JavaScript time to load
+                
+                # Extract page content
+                page_content = page.content()
+                
+                # Extract followers count
+                followers = self._extract_followers(page_content)
+                
+                if followers is not None:
+                    logger.info(f"Successfully extracted follower count: {followers}")
+                    return followers
+                
+                # Close the context before retrying
                 driver.close(context)
-                logger.debug("Browser context closed")
+                
+                # If we reach the max retries, return None
+                if retries == self.max_retries:
+                    logger.warning(f"Could not find follower count after {retries + 1} attempts")
+                    return None
+                
+                # Increment retry counter and wait before next attempt
+                retries += 1
+                wait_time = self.retry_wait_seconds
+                logger.info(f"Follower count not found. Retrying in {wait_time} seconds (Attempt {retries + 1}/{self.max_retries + 1})")
+                time.sleep(wait_time)
+                
+                # Create a new driver for the next attempt
+                driver = PlaywrightDriver()
+                
+            except Exception as e:
+                error_msg = f"Error scraping LinkedIn profile: {str(e)}"
+                logger.error(error_msg)
+                
+                # Clean up resources
+                if 'context' in locals():
+                    driver.close(context)
+                
+                # If we reach the max retries, raise the error
+                if retries == self.max_retries:
+                    raise ScrapingError(error_msg)
+                
+                # Increment retry counter and wait before next attempt
+                retries += 1
+                wait_time = self.retry_wait_seconds
+                logger.info(f"Error occurred. Retrying in {wait_time} seconds (Attempt {retries + 1}/{self.max_retries + 1})")
+                time.sleep(wait_time)
+                
+                # Create a new driver for the next attempt
+                driver = PlaywrightDriver()
+        
+        # This point should never be reached due to the return and raise statements above
+        return None
     
     def _extract_followers(self, page_content: str) -> Optional[int]:
         """
