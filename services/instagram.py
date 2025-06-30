@@ -43,24 +43,22 @@ class InstagramService:
         self.api_endpoint = INSTAGRAM_API_ENDPOINT
         self.max_retries = INSTAGRAM_MAX_RETRIES
         
-        # Headers for the third-party API request
+        # Updated headers for the third-party API request
         self.api_headers = {
-            "authority": "fanhub.pro",
+            "authority": "api.digitalbyte.cc",
             "accept": "*/*",
             "accept-encoding": "gzip, deflate, br, zstd",
-            "accept-language": "en-GB,en;q=0.9,de-DE;q=0.8,de;q=0.7,ar-AE;q=0.6,ar;q=0.5,en-US;q=0.4",
-            "dnt": "1",
+            "accept-language": "en-US,en;q=0.9",
             "origin": "https://www.tucktools.com",
             "priority": "u=1, i",
             "referer": "https://www.tucktools.com/",
-            "sec-ch-ua": '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"',
+            "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
             "sec-ch-ua-mobile": "?0",
             "sec-ch-ua-platform": '"Windows"',
             "sec-fetch-dest": "empty",
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "cross-site",
-            "sec-gpc": "1",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
         }
         
         logger.info(f"Instagram Service initialized for username: {username}")
@@ -72,14 +70,14 @@ class InstagramService:
         Returns:
             Dictionary with follower data or error information
         """
-        params = {"username": self.username}
-        
         try:
+            # Updated API endpoint construction
+            api_url = f"{self.api_endpoint.rstrip('/')}/{self.username}"
             logger.info(f"Fetching Instagram data from API for username: {self.username}")
+            
             response = requests.get(
-                self.api_endpoint,
+                api_url,
                 headers=self.api_headers,
-                params=params,
                 timeout=30
             )
             
@@ -92,7 +90,8 @@ class InstagramService:
                 }
             
             try:
-                data = json.loads(response.text)
+                data = response.json()
+                print(f"API response data: {data}")  # Debugging line to inspect API response
                 followers_count = data.get("user_followers")
                 
                 if followers_count and followers_count != "Not Found":
@@ -131,6 +130,7 @@ class InstagramService:
                 "error": error_msg
             }
     
+    # ... rest of the class remains the same ...
     def _get_followers_from_scraping(self) -> Dict[str, Any]:
         """
         Get follower count by scraping Instagram directly with Playwright.
