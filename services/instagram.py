@@ -91,7 +91,6 @@ class InstagramService:
             
             try:
                 data = response.json()
-                print(f"API response data: {data}")  # Debugging line to inspect API response
                 followers_count = data.get("user_followers")
                 
                 if followers_count and followers_count != "Not Found":
