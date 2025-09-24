@@ -422,6 +422,19 @@ class InstagramService:
             Dictionary containing follower data
         """
         # Try API first
+        api_result = self._get_followers_from_api()
+        
+        if api_result["success"]:
+            return {
+                "platform": "Instagram",
+                "username": self.username,
+                "followers": api_result["followers"],
+                "timestamp": time.time(),
+                "source": "api"
+            }
+        
+        logger.warning(f"API failed: {api_result['error']}")
+        
         # Fallback to scraping
         scrape_result = self._get_followers_from_scraping()
         
@@ -440,7 +453,8 @@ class InstagramService:
             "platform": "Instagram",
             "username": self.username,
             "followers": "Not Found",
-            "timestamp": time.time()
+            "timestamp": time.time(),
+            "error": f"API: {api_result['error']}, Scraping: {scrape_result['error']}"
         }
     
     def get_account_data(self) -> Dict[str, Any]:

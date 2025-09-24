@@ -26,7 +26,7 @@ EXCEL_CHEATSHEETS_LKD_PAGE = 'https://www.linkedin.com/company/excel-cheatsheets
 
 #Instagram Account
 INSTAGRAM_PROFILE_URL = 'https://www.instagram.com/nicolasboucherfinance/'
-INSTAGRAM_MAX_RETRIES = 5
+INSTAGRAM_MAX_RETRIES = 10
 
 # Twitter settings
 TWITTER_USERNAME = 'bouchernicolas'
