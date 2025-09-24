@@ -20,6 +20,7 @@ class PlaywrightDriver:
             cookies_file: Path to a JSON file containing cookies for authentication.
         """
         self.cookies_file = cookies_file
+        print(f"Initialized PlaywrightDriver with cookies_file: {self.cookies_file}")
         self.playwright = None
         self.browser = None
         
