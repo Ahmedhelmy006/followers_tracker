@@ -49,8 +49,11 @@ class FollowersSubmitter:
                              linkedin_newsletter_data: Dict[str, Any],
                              youtube_data: Dict[str, Any],
                              instagram_data: Dict[str, Any],
+                             facebook_data: Dict[str, Any],
                              twitter_data: Dict[str, Any],
-                             kit_data: Dict[str, Any]) -> bool:
+                             tiktok_data,
+                             kit_data: Dict[str, Any],
+                             ) -> bool:
         """
         Submit followers data to the followers form.
         
@@ -95,6 +98,7 @@ class FollowersSubmitter:
                 
                 # Instagram Data
                 'Instagram Total Followers': instagram_data.get("followers"),
+                'Facebook Page Total Followers': facebook_data.get("followers"),
                 
                 # Twitter Data
                 'X Total Number of Followers': twitter_data.get("followers"),
@@ -102,7 +106,11 @@ class FollowersSubmitter:
                 'X Followers Last 30 Days Percentage': twitter_data.get("followers_percentage", "Not Available"),
                 
                 # Kit Data
-                "Kit's Daily Number of Subscribers": kit_data.get("subscribers")
+                "Kit's Daily Number of Subscribers": kit_data.get("subscribers"),
+
+                #Tiktok Data
+                "Tiktok Followers": tiktok_data.get("followers"),
+                "Tiktok Likes": tiktok_data.get("likes")
             }
             
             # Log the mapped data

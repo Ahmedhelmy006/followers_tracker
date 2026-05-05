@@ -236,7 +236,7 @@ class InstagramService:
         Returns:
             Dictionary with follower data or error information
         """
-        driver = PlaywrightStealthDriver(cookies_file=r"D:\followers_tracker\data\instagram_cookies.json")
+        driver = PlaywrightStealthDriver(cookies_file=r"/home/developer/followers_tracker/data/instagram_cookies.json")
         follower_count = None
         
         try:

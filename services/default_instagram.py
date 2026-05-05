@@ -475,8 +475,8 @@ if __name__ == "__main__":
     )
     
     # Create service and get data
-    service = InstagramService()
-    account_data = service.get_account_data()
+   # service = InstagramService()
+   # account_data = service.get_account_data()
     
     # Print results
     print(f"Instagram Data: {account_data}")

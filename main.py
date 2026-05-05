@@ -50,14 +50,16 @@ from services.linkedin_company import LinkedInCompanyService
 from services.linkedin_newsletter import LinkedInNewsletterService
 from services.twitter import TwitterService
 from services.instagram import InstagramService
+from services.facebook import FacebookProfileService
 from services.kit import KitService
 from services.youtube import YouTubeService
 from utils.followers_submitter import FollowersSubmitter
+from services.tiktok import TikTok
 from utils.exceptions import (
     ScrapingError, APIError, RateLimitError, DataSubmissionError
 )
 from config.settings import (
-    AIFC_LKD_PAGE, BI_LKD_PAGE, NBO_LKD_PAGE, EXCEL_CHEATSHEETS_LKD_PAGE
+    AIFC_LKD_PAGE, BI_LKD_PAGE, NBO_LKD_PAGE, EXCEL_CHEATSHEETS_LKD_PAGE, FACEBOOK_URL
 )
 
 def collect_linkedin_profile_data() -> Dict[str, Any]:
@@ -227,6 +229,36 @@ def collect_instagram_data() -> Dict[str, Any]:
             "timestamp": time.time()
         }
 
+def collect_facebook_data() -> Dict[str, Any]:
+    """
+    Collect data from Facebook.
+    
+    Returns:
+        Dictionary with Facebook data
+    """
+    logger.info("Collecting Facebook data...")
+    
+    try:
+        service = FacebookProfileService()
+        followers_count = service.get_followers()
+        
+        logger.info(f"Facebook data collected: {followers_count} followers")
+        return {
+            "platform": "Facebook",
+            "followers": followers_count,
+            "error": None,
+            "timestamp": time.time()
+        }
+    
+    except Exception as e:
+        logger.error(f"Failed to collect Facebook data: {str(e)}")
+        return {
+            "platform": "Facebook",
+            "followers": "Not Found",
+            "error": str(e),
+            "timestamp": time.time()
+        }
+
 def collect_youtube_data() -> Dict[str, Any]:
     """
     Collect data from YouTube.
@@ -298,6 +330,16 @@ def collect_kit_data() -> Dict[str, Dict[str, Any]]:
                 "timestamp": time.time()
             }
         }
+    
+def collect_tiktok_data():
+    logger.info("Collecting Tiktok Data..")
+    
+    try:
+        service = TikTok()
+        data = service.get_metrics()
+        return data
+    except Exception as e:
+        logger.error(f"Failed to retrieve Tiktok's information. Check{e}")
 
 def submit_data(
     linkedin_profile_data: Dict[str, Any],
@@ -305,8 +347,10 @@ def submit_data(
     linkedin_newsletter_data: Dict[str, Any],
     twitter_data: Dict[str, Any],
     instagram_data: Dict[str, Any],
+    facebook_data: Dict[str, Any],
     youtube_data: Dict[str, Any],
-    kit_data: Dict[str, Dict[str, Any]]
+    tiktok_data,
+    kit_data: Dict[str, Dict[str, Any]],
 ) -> bool:
     """
     Submit collected data to Google Forms.
@@ -335,8 +379,11 @@ def submit_data(
             linkedin_newsletter_data,
             youtube_data,
             instagram_data,
+            facebook_data,
             twitter_data,
+            tiktok_data,
             kit_data["daily"]
+
         )
         
         # Submit Kit stats data
@@ -376,7 +423,9 @@ def run_followers_tracker():
         linkedin_newsletter_data = collect_linkedin_newsletter_data()
         twitter_data = collect_twitter_data()
         instagram_data = collect_instagram_data()
+        facebook_data = collect_facebook_data()
         youtube_data = collect_youtube_data()
+        tiktok_data = collect_tiktok_data()
         kit_data = collect_kit_data()
         
         # Step 2: Submit data to Google Forms
@@ -386,7 +435,9 @@ def run_followers_tracker():
             linkedin_newsletter_data,
             twitter_data,
             instagram_data,
+            facebook_data,
             youtube_data,
+            tiktok_data,
             kit_data
         )
         

@@ -20,9 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 NICOLAS_LKD_PROFILE = 'https://de.linkedin.com/in/bouchernicolas'
 LKD_NEWSLETTER = 'https://www.linkedin.com/pulse/1-reason-your-month-end-close-failing-how-fix-nicolas-boucher-utgpf?trk=news-guest_share-article'
 AIFC_LKD_PAGE = 'https://www.linkedin.com/company/ai-finance-club'
-BI_LKD_PAGE = 'https://www.linkedin.com/company/business-infographics'
+BI_LKD_PAGE = 'https://www.linkedin.com/company/business-infographics-by-nicolas-boucher'
 NBO_LKD_PAGE = 'https://www.linkedin.com/company/nicolas-boucher-online'
-EXCEL_CHEATSHEETS_LKD_PAGE = 'https://www.linkedin.com/company/excel-cheatsheets/'
+EXCEL_CHEATSHEETS_LKD_PAGE = 'https://www.linkedin.com/company/excel-cheatsheets-by-nicolas-boucher'
 
 #Instagram Account
 INSTAGRAM_PROFILE_URL = 'https://www.instagram.com/nicolasboucherfinance/'
@@ -64,8 +64,11 @@ FOLLOWERS_FORM_FIELDS = {
     'Nicolas Boucher Online Videos | YouTube Subscribers': 'entry.114799247',
     'Nicolas Boucher Online Videos | YouTube Total Views': 'entry.1433952907',
     'Instagram Total Followers': 'entry.147129590',
+    'Facebook Page Total Followers': 'entry.1615206567',
     'X Total Number of Followers': 'entry.121881511',
-    "Kit's Daily Number of Subscribers": 'entry.395742871'
+    "Kit's Daily Number of Subscribers": 'entry.395742871',
+    "Tiktok Followers": "entry.1332380802",
+    "Tiktok Likes": "entry.130639733"
 }
 
 KIT_STATS_FORM_FIELDS = {
@@ -85,6 +88,7 @@ KIT_STATS_FORM_FIELDS = {
 
 LOG_FILE_PATH = os.getenv('LOG_FILE_PATH', 'logs/followers_tracker.log')
 
+FACEBOOK_URL = "https://www.facebook.com/people/Nicolas-Boucher-Online/61561793581257/"
 
 # Database settings
 DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///data/followers_stats.db')
