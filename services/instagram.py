@@ -423,23 +423,32 @@ class InstagramService:
         """
         # Try API first
         # Fallback to scraping
-        scrape_result = self._get_followers_from_scraping()
+        #scrape_result = self._get_followers_from_scraping()
         
-        if scrape_result["success"]:
-            return {
-                "platform": "Instagram",
-                "username": self.username,
-                "followers": scrape_result["followers"],
-                "timestamp": time.time(),
-                "source": "scraping"
-            }
+        #if scrape_result["success"]:
+        #    return {
+        #        "platform": "Instagram",
+        #        "username": self.username,
+        #        "followers": scrape_result["followers"],
+        #        "timestamp": time.time(),
+        #        "source": "scraping"
+        #    }
         
         # Both methods failed
-        logger.error("Both API and scraping methods failed")
+        #logger.error("Both API and scraping methods failed")
+
+        url = f"https://graph.facebook.com/v17.0/{os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID')}"
+        params = {
+            "fields": "followers_count",
+            "access_token": os.getenv('INSTAGRAM_LONG_ACCESS_TOKEN')
+        }
+        resp = requests.get(url, params=params)
+        #print(resp.json())
+
         return {
             "platform": "Instagram",
             "username": self.username,
-            "followers": "Not Found",
+            "followers": resp.json().get("followers_count"),
             "timestamp": time.time()
         }
     
