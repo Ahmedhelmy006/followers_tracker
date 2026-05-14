@@ -214,8 +214,8 @@ def collect_instagram_data() -> Dict[str, Any]:
     logger.info("Collecting Instagram data...")
     
     try:
-        service = InstagramService()
-        data = service.get_account_data()
+        service = InstagramService(username="nicolasboucherfinance")
+        data = service.get_followers()
         
         logger.info(f"Instagram data collected: {data['followers']} followers")
         return data
