@@ -13,7 +13,7 @@ class InstagramService:
 
     def get_followers(self):
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(headless=True,     args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"])
             context = browser.new_context(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
             )
@@ -30,10 +30,11 @@ class InstagramService:
                     except Exception as e:
                         logger.warning(f"Could not parse response: {e}")
 
+            page.on("response", print(page.url))
             page.on("response", handle_response)
 
             # Visit the profile page to trigger the GraphQL call
-            page.goto(f"https://www.instagram.com/{self.username}/", wait_until="networkidle")
+            page.goto(f"https://www.instagram.com/{self.username}/", wait_until="networkidle", timeout=30000)
             
             browser.close()
 
