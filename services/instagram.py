@@ -19,9 +19,8 @@ class InstagramService:
             )
             page = context.new_page()
 
-            # Intercept GraphQL responses
             def handle_response(response):
-                if "graphql/query" in response.url and response.status == 200:
+                if "graphql" in response.url and response.status == 200:  # removed /query
                     try:
                         data = response.json()
                         user = data.get("data", {}).get("user", {})
