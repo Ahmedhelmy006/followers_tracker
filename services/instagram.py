@@ -1,7 +1,8 @@
-import json
-import time
-import logging
+import json, os, time, logging
 from playwright.sync_api import sync_playwright
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,13 @@ class InstagramService:
 
     def get_followers(self):
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True,     args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"])
+            browser = p.chromium.launch(headless=True,     
+                                        args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"], 
+                                        proxy={
+                                            "server": os.getenv("INSTAGRAM_PROXY_ADDRESS"),
+                                            "username": os.getenv("INSTAGRAM_PROXY_USERNAME"),
+                                            "password": os.getenv("INSTAGRAM_PROXY_PASSWORD")
+                                        })
             context = browser.new_context(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0"
             )
