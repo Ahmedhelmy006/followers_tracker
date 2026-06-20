@@ -44,16 +44,17 @@ class FollowersSubmitter:
         logger.info("FollowersSubmitter initialized")
     
     def submit_followers_data(self, 
-                             linkedin_profile_data: Dict[str, Any],
-                             linkedin_company_data: List[Dict[str, Any]],
-                             linkedin_newsletter_data: Dict[str, Any],
-                             youtube_data: Dict[str, Any],
-                             instagram_data: Dict[str, Any],
-                             facebook_data: Dict[str, Any],
-                             twitter_data: Dict[str, Any],
-                             tiktok_data,
-                             kit_data: Dict[str, Any],
-                             ) -> bool:
+                            linkedin_profile_data: Dict[str, Any],
+                            linkedin_company_data: List[Dict[str, Any]],
+                            linkedin_newsletter_data: Dict[str, Any],
+                            youtube_data: Dict[str, Any],
+                            instagram_data: Dict[str, Any],
+                            facebook_data: Dict[str, Any],
+                            twitter_data: Dict[str, Any],
+                            tiktok_data,
+                            threads_data: Dict[str, Any],  # ADD THIS
+                            kit_data: Dict[str, Any],
+                            ) -> bool:
         """
         Submit followers data to the followers form.
         
@@ -110,7 +111,9 @@ class FollowersSubmitter:
 
                 #Tiktok Data
                 "Tiktok Followers": tiktok_data.get("followers"),
-                "Tiktok Likes": tiktok_data.get("likes")
+                "Tiktok Likes": tiktok_data.get("likes"),
+
+                "Threads Followers": threads_data.get("followers"),  # ADD THIS
             }
             
             # Log the mapped data

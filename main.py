@@ -53,6 +53,7 @@ from services.instagram import InstagramService
 from services.facebook import FacebookProfileService
 from services.kit import KitService
 from services.youtube import YouTubeService
+from services.threads import ThreadsProfileService
 from utils.followers_submitter import FollowersSubmitter
 from services.tiktok import TikTok
 from utils.exceptions import (
@@ -341,6 +342,25 @@ def collect_tiktok_data():
     except Exception as e:
         logger.error(f"Failed to retrieve Tiktok's information. Check{e}")
 
+def collect_threads_data() -> Dict[str, Any]:
+    logger.info("Collecting Threads data...")
+    
+    try:
+        service = ThreadsProfileService()
+        data = service.get_profile_data()
+        
+        logger.info(f"Threads data collected: {data['followers']} followers")
+        return data
+    
+    except Exception as e:
+        logger.error(f"Failed to collect Threads data: {str(e)}")
+        return {
+            "platform": "Threads",
+            "followers": "Not Found",
+            "error": str(e),
+            "timestamp": time.time()
+        }
+
 def submit_data(
     linkedin_profile_data: Dict[str, Any],
     linkedin_company_data: List[Dict[str, Any]],
@@ -350,6 +370,7 @@ def submit_data(
     facebook_data: Dict[str, Any],
     youtube_data: Dict[str, Any],
     tiktok_data,
+    threads_data,
     kit_data: Dict[str, Dict[str, Any]],
 ) -> bool:
     """
@@ -382,6 +403,7 @@ def submit_data(
             facebook_data,
             twitter_data,
             tiktok_data,
+            threads_data,
             kit_data["daily"]
 
         )

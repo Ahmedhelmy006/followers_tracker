@@ -479,4 +479,3 @@ if __name__ == "__main__":
    # account_data = service.get_account_data()
     
     # Print results
-    print(f"Instagram Data: {account_data}")
