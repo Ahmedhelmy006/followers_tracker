@@ -461,6 +461,7 @@ def run_followers_tracker():
             facebook_data,
             youtube_data,
             tiktok_data,
+            threads_data,
             kit_data
         )
         
