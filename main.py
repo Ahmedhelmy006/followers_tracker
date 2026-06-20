@@ -448,6 +448,7 @@ def run_followers_tracker():
         facebook_data = collect_facebook_data()
         youtube_data = collect_youtube_data()
         tiktok_data = collect_tiktok_data()
+        threads_data = collect_threads_data()
         kit_data = collect_kit_data()
         
         # Step 2: Submit data to Google Forms
