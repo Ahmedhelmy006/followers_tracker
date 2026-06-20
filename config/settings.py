@@ -68,7 +68,8 @@ FOLLOWERS_FORM_FIELDS = {
     'X Total Number of Followers': 'entry.121881511',
     "Kit's Daily Number of Subscribers": 'entry.395742871',
     "Tiktok Followers": "entry.1332380802",
-    "Tiktok Likes": "entry.130639733"
+    "Tiktok Likes": "entry.130639733",
+    "Threads Followers": "entry.961304919"  # ADD THIS
 }
 
 KIT_STATS_FORM_FIELDS = {
