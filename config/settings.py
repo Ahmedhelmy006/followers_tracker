@@ -24,9 +24,11 @@ BI_LKD_PAGE = 'https://www.linkedin.com/company/business-infographics-by-nicolas
 NBO_LKD_PAGE = 'https://www.linkedin.com/company/nicolas-boucher-online'
 EXCEL_CHEATSHEETS_LKD_PAGE = 'https://www.linkedin.com/company/excel-cheatsheets-by-nicolas-boucher'
 
-#Instagram Account
+# Instagram Accounts
 INSTAGRAM_PROFILE_URL = 'https://www.instagram.com/nicolasboucherfinance/'
 INSTAGRAM_MAX_RETRIES = 10
+INSTAGRAM_USERNAME = 'nicolasboucherfinance'
+INSTAGRAM_USERNAME_AIFC = 'theaifinanceclub'  # AI Finance Club profile
 
 # Twitter settings
 TWITTER_USERNAME = 'bouchernicolas'
@@ -36,9 +38,6 @@ TWITTER_BEARER_TOKEN = os.getenv('TWITTER_BEARER_TOKEN')
 YT_CHANNEL_ID = os.getenv('YOUTUBE_CHANNEL_ID')
 YT_API_KEY = os.getenv('YOUTUBE_API_ID')
 
-# Instagram settings
-INSTAGRAM_USERNAME = 'nicolasboucherfinance'
-
 # Kit settings
 KIT_API_KEY = os.getenv('KIT_V4_API_KEY')
 KIT_GROWTH_STATS_ENDPOINT = "https://api.kit.com/v4/account/growth_stats"
@@ -47,7 +46,6 @@ KIT_GROWTH_STATS_ENDPOINT = "https://api.kit.com/v4/account/growth_stats"
 YOUTUBE_STATS_ENDPOINT = f'https://www.googleapis.com/youtube/v3/channels?part=statistics&id={YT_CHANNEL_ID}&key={YT_API_KEY}'
 TWITTER_API_ENDPOINT = f"https://api.twitter.com/2/users/by/username/{TWITTER_USERNAME}?user.fields=public_metrics"
 INSTAGRAM_API_ENDPOINT = "https://fanhub.pro/tucktools_user"
-KIT_GROWTH_STATS_ENDPOINT = "https://api.kit.com/v4/account/growth_stats"
 
 # Google Form URLs
 FOLLOWERS_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeK_A8x_7ipnICGwK3k3MdTq3vGhXwfu9BhSz37Bgz27T1llw/formResponse'
@@ -58,7 +56,7 @@ FOLLOWERS_FORM_FIELDS = {
     'Business Infographics': 'entry.1247179473',
     'Nicolas Boucher Online': 'entry.1150066733',
     'AI Finance Club': 'entry.269674828',
-    'Excel Cheatsheets' :'entry.112291860',
+    'Excel Cheatsheets': 'entry.112291860',
     'Nicolas Boucher Personal Account': 'entry.627780398',
     'AI + Finance by Nicolas Boucher Newsteller': 'entry.508828894',
     'Nicolas Boucher Online Videos | YouTube Subscribers': 'entry.114799247',
@@ -69,7 +67,8 @@ FOLLOWERS_FORM_FIELDS = {
     "Kit's Daily Number of Subscribers": 'entry.395742871',
     "Tiktok Followers": "entry.1332380802",
     "Tiktok Likes": "entry.130639733",
-    "Threads Followers": "entry.961304919"  # ADD THIS
+    "Threads Followers": "entry.961304919",
+    'AI Finance Club Instagram Followers': "entry.95142778"
 }
 
 KIT_STATS_FORM_FIELDS = {
