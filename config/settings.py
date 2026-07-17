@@ -97,3 +97,7 @@ DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///data/followers_stats.db')
 DEFAULT_TIMEOUT = int(os.getenv('DEFAULT_TIMEOUT', '30'))  # Default timeout in seconds
 MAX_RETRIES = int(os.getenv('MAX_RETRIES', '3'))  # Default max retries
 HEADLESS_BROWSER = os.getenv('HEADLESS_BROWSER', 'False').lower() == 'false'
+
+SOCIALBLADE_COOKIES_FILE = os.getenv('SOCIALBLADE_COOKIES_FILE', str(BASE_DIR / 'Cookies.json'))
+SOCIALBLADE_HEADLESS = os.getenv('SOCIALBLADE_HEADLESS', 'True').lower() == 'true'
+SOCIALBLADE_TIMEOUT_MS = int(os.getenv('SOCIALBLADE_TIMEOUT_MS', '45000'))
