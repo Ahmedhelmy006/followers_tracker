@@ -11,8 +11,10 @@ UTC), so it CANNOT produce the live number. If history is ever needed rather
 than a live reading, that's the other page.
 
 Requires a Socialblade cookie jar (Chrome-extension export format) at the path
-configured by SOCIALBLADE_COOKIES_FILE. An expired session returns HTTP 200
-with logged-out HTML, so failures surface as a missing `platformResult`.
+configured by SOCIALBLADE_COOKIES_FILE. Socialblade sits behind Cloudflare, so
+the FIRST navigation in a cold context can be met with a 403 challenge page;
+we warm the context up with a throwaway homepage hit and retry each profile a
+couple of times to ride through that.
 """
 
 import os, sys
@@ -27,7 +29,7 @@ from typing import Dict, Any, List, Optional
 from urllib.parse import urlsplit
 
 from bs4 import BeautifulSoup
-from playwright.sync_api import Response, sync_playwright
+from playwright.sync_api import sync_playwright
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from config.settings import (
@@ -39,7 +41,14 @@ from config.settings import (
 
 logger = logging.getLogger(__name__)
 
+HOME_URL = "https://socialblade.com/"
 URL_TEMPLATE = "https://socialblade.com/instagram/search?query={handle}"
+
+# How many times to attempt a single profile before giving up.
+PROFILE_ATTEMPTS = 3
+# Seconds to wait after a blocked attempt before retrying (Cloudflare clearance
+# usually lands within a second or two of the challenge being solved).
+RETRY_WAIT_SECONDS = 4
 
 UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -160,6 +169,11 @@ class InstagramService:
                     else route.continue_(),
                 )
 
+                # Warm the context up so the Cloudflare challenge is cleared
+                # BEFORE the first real profile fetch (otherwise the first
+                # profile in the batch eats the 403 challenge page).
+                self._warm_up(context)
+
                 try:
                     for i, username in enumerate(usernames):
                         results[username] = self._fetch_profile(context, username)
@@ -180,75 +194,113 @@ class InstagramService:
     # Internals
     # ------------------------------------------------------------------ #
 
-    def _fetch_profile(self, context, username: str) -> Dict[str, Any]:
-        """Load one Socialblade search page and pull the live follower count."""
+    def _warm_up(self, context) -> None:
+        """
+        Prime the context against Cloudflare by hitting the homepage once.
+
+        A cold context often gets a 403 challenge on its first navigation;
+        Chromium solves the JS challenge and Cloudflare drops a fresh
+        clearance cookie into the context. Spending that challenge on a
+        throwaway homepage hit means the profile fetches that follow start
+        already cleared. Best-effort: failures here are non-fatal.
+        """
+        page = context.new_page()
         try:
-            html, status = self._fetch_html(context, username)
-
-            if status != 200:
-                logger.warning(f"[{username}] Socialblade returned HTTP {status}")
-
-            data = self._extract_next_data(html)
-            platform_result = self._find_platform_result(data)
-
-            if platform_result is None:
-                # An expired session returns 200 with logged-out HTML, not an error.
-                logger.error(
-                    f"[{username}] No platformResult in payload. Either the handle "
-                    "doesn't exist, or the Socialblade session cookie has expired "
-                    "(it returns HTTP 200 either way)."
-                )
-                return self._result(username, None)
-
-            followers = platform_result.get("followers")
-            if followers is None:
-                logger.error(
-                    f"[{username}] platformResult has no 'followers'. Keys: {list(platform_result)}"
-                )
-                return self._result(username, None)
-
-            # Comes back as int on some routes, str on others.
-            followers = int(followers)
-            logger.info(f"[{username}] Follower count: {followers}")
-            return self._result(username, followers)
-
+            resp = page.goto(HOME_URL, wait_until="domcontentloaded", timeout=SOCIALBLADE_TIMEOUT_MS)
+            status = resp.status if resp else "unknown"
+            logger.info(f"Socialblade warm-up hit homepage (HTTP {status})")
+            # Give any challenge redirect a moment to settle and set clearance.
+            time.sleep(3)
         except Exception as e:
-            logger.error(f"[{username}] Failed to fetch follower count: {e}")
-            return self._result(username, None)
+            logger.warning(f"Socialblade warm-up navigation failed (continuing anyway): {e}")
+        finally:
+            page.close()
+
+    def _fetch_profile(self, context, username: str) -> Dict[str, Any]:
+        """
+        Load one Socialblade search page and pull the live follower count,
+        retrying through transient Cloudflare blocks.
+        """
+        for attempt in range(1, PROFILE_ATTEMPTS + 1):
+            try:
+                html, status = self._fetch_html(context, username)
+
+                if status is not None and status != 200:
+                    logger.warning(
+                        f"[{username}] Socialblade returned HTTP {status} "
+                        f"(attempt {attempt}/{PROFILE_ATTEMPTS})"
+                    )
+                    if self._retry_pause(attempt):
+                        continue
+                    return self._result(username, None)
+
+                data = self._extract_next_data(html)
+                platform_result = self._find_platform_result(data)
+
+                if platform_result is None:
+                    # An expired session returns 200 with logged-out HTML, not
+                    # an error; a challenge page also lands here with no data.
+                    logger.warning(
+                        f"[{username}] No platformResult in payload "
+                        f"(attempt {attempt}/{PROFILE_ATTEMPTS}). Handle may not "
+                        "exist, the page was a challenge, or the session cookie expired."
+                    )
+                    if self._retry_pause(attempt):
+                        continue
+                    return self._result(username, None)
+
+                followers = platform_result.get("followers")
+                if followers is None:
+                    logger.error(
+                        f"[{username}] platformResult has no 'followers'. Keys: {list(platform_result)}"
+                    )
+                    return self._result(username, None)
+
+                # Comes back as int on some routes, str on others.
+                followers = int(followers)
+                logger.info(f"[{username}] Follower count: {followers}")
+                return self._result(username, followers)
+
+            except Exception as e:
+                logger.warning(
+                    f"[{username}] Fetch failed (attempt {attempt}/{PROFILE_ATTEMPTS}): {e}"
+                )
+                if self._retry_pause(attempt):
+                    continue
+                logger.error(f"[{username}] Giving up after {PROFILE_ATTEMPTS} attempts")
+                return self._result(username, None)
+
+        return self._result(username, None)
+
+    @staticmethod
+    def _retry_pause(attempt: int) -> bool:
+        """Sleep before a retry. Returns True if another attempt remains."""
+        if attempt < PROFILE_ATTEMPTS:
+            time.sleep(RETRY_WAIT_SECONDS)
+            return True
+        return False
 
     def _fetch_html(self, context, handle: str) -> tuple:
-        """Load the search page in a fresh tab; return (html, status)."""
+        """
+        Load the search page in a fresh tab and return (html, status).
+
+        We read the status from the navigation response and the markup from
+        page.content() (the serialized live DOM, which contains __NEXT_DATA__).
+        This avoids reading response.body() inside an event handler, which
+        races page teardown and throws TargetClosedError.
+        """
         target = URL_TEMPLATE.format(handle=handle)
-        captured: dict = {}
-
         page = context.new_page()
-
-        def on_response(response: Response) -> None:
-            if self._normalize(response.url) != self._normalize(target):
-                return
-            if response.request.resource_type != "document":
-                return
-            captured["status"] = response.status
-            captured["body"] = response.body()  # must be read before the page closes
-
-        page.on("response", on_response)
 
         try:
             # NOT networkidle -- ad tags keep the connection count above zero
             # forever, so that condition can never be satisfied on this site.
-            page.goto(target, wait_until="domcontentloaded", timeout=SOCIALBLADE_TIMEOUT_MS)
-        except PlaywrightTimeoutError:
-            # A nav timeout isn't a failure if the document already landed.
-            if "body" not in captured:
-                raise
-            logger.debug(f"[{handle}] Nav timed out; document response already captured.")
+            response = page.goto(target, wait_until="domcontentloaded", timeout=SOCIALBLADE_TIMEOUT_MS)
+            status = response.status if response else None
+            html = page.content()
+            return html, status
         finally:
             page.close()
-
-        if "body" not in captured:
-            raise RuntimeError(f"No document response for {target} -- redirected or blocked?")
-
-        return captured["body"].decode("utf-8", errors="replace"), captured["status"]
 
     @staticmethod
     def _load_cookies(path: Path) -> List[Dict[str, Any]]:
@@ -290,12 +342,6 @@ class InstagramService:
             cookies.append(cookie)
 
         return cookies
-
-    @staticmethod
-    def _normalize(url: str) -> str:
-        """Compare URLs on scheme+host+path, ignoring query and fragment."""
-        parts = urlsplit(url)
-        return f"{parts.scheme}://{parts.netloc}{parts.path}".rstrip("/")
 
     @staticmethod
     def _extract_next_data(html: str) -> Dict[str, Any]:
